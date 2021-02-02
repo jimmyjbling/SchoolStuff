@@ -1,0 +1,139 @@
+---
+title: "Homework 4"
+author: "James Wellnitz"
+date: "October 7, 2019"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/still/Downloads")
+```
+
+```{r read_in}
+df <- read.csv("aneurysm_data(1).csv")
+```
+
+```{r load_libs}
+library(ggplot2)
+library(reshape)
+library(plotly)
+```
+
+
+##Q1
+**1.1**
+```{r q1.1}
+plot(df$Age, df$BloodPressure, main = "Age vs Blood Pressure", ylab = "Blood Pressure", xlab = "Age")
+lines(lowess(df$Age, df$BloodPressure))
+```
+**1.2**
+```{r q1.2}
+boxplot(df$Age, df$Aneurisms_q1, main="Age and q1 Aneurisms", names = c("Age","q1 Aneurisms"), ylab = "Age/Aneurisms", ylim = c(0,300))
+boxplot(df$Age, df$Aneurisms_q2, main="Age and q2 Aneurisms", names = c("Age", "q2 Aneurisms"), ylab = "Age/Aneurisms",  ylim = c(0,300))
+```
+**1.3**
+```{r q1.3}
+hist(df$Aneurisms_q3, col=rgb(1,0,0,0.5), main = "Histogram q3 & q4 Aneurisms", xlab = "Aneurisms", xlim = c(0,400), ylim = c(0,25))
+hist(df$Aneurisms_q4, col=rgb(0,0,1,0.5), add = TRUE)
+legend(275, 20, legend = c("q3 aneurisms", "q4 aneurisms"), col = c(rgb(1,0,0,0.5), rgb(0,0,1,0.5)), pch = 16)
+```
+
+##Q2
+**2.1**
+```{r q2.1}
+ggplot(data = df, aes(Age, BloodPressure)) + geom_point() + geom_smooth(method = "loess", se=FALSE) + labs(title="Age vs Blood Preasure", x="Age", y="Blood Preasure")
+```
+**2.2**
+```{r q2.2}
+q1 <- subset(df, df$Aneurisms_q1 < quantile(df$Aneurisms_q1, 0.25))
+q1 <- data.frame(q1, 1)
+names(q1)[10] <- "quantile"
+q1$quantile <- as.factor(q1$quantile)
+
+q2 <- subset(df, df$Aneurisms_q1 >= quantile(df$Aneurisms_q1, 0.25) & df$Aneurisms_q1 < quantile(df$Aneurisms_q1,0.5))
+q2 <- data.frame(q2, 2)
+names(q2)[10] <- "quantile"
+q2$quantile <- as.factor(q2$quantile)
+
+q3 <- subset(df, df$Aneurisms_q1 >= quantile(df$Aneurisms_q1, 0.5) & df$Aneurisms_q1 < quantile(df$Aneurisms_q1,0.75))
+q3 <- data.frame(q3, 3)
+names(q3)[10] <- "quantile"
+q3$quantile <- as.factor(q3$quantile)
+
+q4 <- subset(df, df$Aneurisms_q1 > quantile(df$Aneurisms_q1,0.75))
+q4 <- data.frame(q4, 4)
+names(q4)[10] <- "quantile"
+q4$quantile <- as.factor(q4$quantile)
+
+newdf <- rbind(q1,q2,q3,q4)
+
+ggplot(data = newdf, aes(x = Age, group = quantile, color = quantile, fill = quantile)) + geom_density(alpha = 0.5) + xlim(7,25) + 
+scale_color_manual(values=c("#FF0000", "#0000FF", "#008000", "#FFA500")) + scale_fill_manual(values=c("#FF0000", "#0000FF", "#008000", "#FFA500")) + 
+labs(title = "Density of Age by Quantile of q1 Aneurisms", y = "Density")
+```
+**2.3**
+```{r}
+melted <- melt(df[,8:9])
+ggplot(data = melted) + geom_histogram(aes(x = value, fill = variable, color = variable), bins = 30, position="identity") + 
+labs(title = "Histogram of q3 & q4 Aneurisms", x="Aneurisms", y="Count") + scale_color_manual(values=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5))) + 
+scale_fill_manual(values=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5)))
+```
+**2.4**
+ADD DISCOUSSION HERE
+**2.5**
+```{r q2.5} 
+ggplot(data = df, aes(Age, BloodPressure)) + geom_point(aes(Age, BloodPressure, color = Group))  + geom_smooth(method = "loess", color = "black") + 
+labs(title="Age vs Blood Pressure", x="Age", y="Blood Preasure") + theme_classic(base_size = 16)
+
+ggplot(data = newdf, aes(x = Age, group = quantile, color = quantile, fill = quantile)) + geom_density(size = 1.3, alpha = 0.5) + xlim(7,25) + 
+scale_color_manual(values=c("#FF0000", "#0000FF", "#008000", "#FFA500")) + scale_fill_manual(values=c("#FF0000", "#0000FF", "#008000", "#FFA500")) + 
+labs(title = "Density of Age by Quantile of q1 Aneurisms", y = "Density") + theme_classic(base_size = 16)
+
+ggplot(data = melted) + geom_histogram(aes(x = value, fill = variable, color = variable), bins = 30, position="identity") + 
+labs(title = "Histogram of q3 & q4 Aneurisms", x="Aneurisms", y="Count") + scale_color_manual(values=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5))) + 
+scale_fill_manual(values=c(rgb(1,0,0,0.5), rgb(0,0,1,0.5))) + theme_classic(base_size = 16) + geom_vline(xintercept = mean(df$Aneurisms_q3), col = rgb(1,0,0,0.5), size = 1) + 
+geom_vline(xintercept = mean(df$Aneurisms_q4), col = rgb(0,0,1,0.5), size = 1)
+```
+
+##Q3
+**Q 3.1**
+```{r q3.1}
+p <- df %>%
+  plot_ly(type = 'violin') %>%
+  add_trace(
+    y = ~Age,
+    legendgroup = "A",
+    box = list(
+      visible = T
+    ),
+    meanline = list(
+      visble = T
+    ),
+    name = "Age"
+  ) %>%
+  add_trace(
+    y = ~Aneurisms_q2,
+    legendgroup = "Q",
+    box = list(
+      visible = T
+    ),
+    meanline = list(
+      visble = T
+    ),
+    name = "q2 Aneurisms"
+  ) %>%
+  layout(
+    yaxis = list(
+      zeroline = T,
+      title = "Age/Aneurisms"
+    ),
+    title = "Violin of Age and q2 Aneurisms"
+  )
+
+link <- api_create(p, filename = "HW4_CS242_Purdue")
+```
+

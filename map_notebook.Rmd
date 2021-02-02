@@ -1,0 +1,50 @@
+---
+title: "Mapping of city locations"
+author: "James Wellnitz"
+date: "March 27, 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Cord data set is generated from a gis hookup to locate cites. The look up is not 100% accurate as only city and state name are given
+This notebook goes through the prosess of cleaing up the cordinate point and plotting the accurate one on a map to give a general idea of distribution
+
+read in data
+```{r}
+cords <- read.csv("C:/Users/still/OneDrive/Purdue S4/STAT 355/Cord.csv")
+```
+
+remove NA values and convert to SpatialPoints
+```{r}
+library(sp)
+cords <- cords[!is.na(cords$lat),]
+cords.vector <- cbind(cords$long, cords$lat)
+cords.sp <- SpatialPoints(cords.vector, proj4string = CRS("+proj=longlat"))
+```
+
+create SPatialPolygon map of US
+```{r echo=FALSE}
+library(maps)
+library(rgeos)
+library(maptools)
+usa <- map('state', fill = TRUE)
+usa <- map2SpatialPolygons(usa, IDs = usa$names, proj4string = CRS("+proj=longlat"))
+```
+
+remove points outside US
+```{r}
+cords.over <- over(cords.sp, usa, returnList = TRUE)
+cords.over <- cords[!is.na(cords.over == 0),]
+```
+
+plot
+```{r echo = FALSE}
+library(ggplot2)
+ggplot(usa, aes(x=long, y=lat, group=group)) + geom_polygon(fill="white", color="black") +xlim(c(-130,-67))+ ylim(c(25,50)) + geom_point(data = cords.over, inherit.aes = F, aes(x=long, y=lat), color="red", alpha=.8)
+```
+

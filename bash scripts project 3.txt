@@ -1,0 +1,84 @@
+$time head -500000 test_set_tweets.txt | grep -i -E -o '#(\w+)' | cut -c 2- | tr '[:upper:]' '[:lower:]' | sort | uniq -c | sort -n
+
+    459 musicmonday
+    460 followfriday
+    525 shoutout
+    598 haiti
+    654 random
+    705 fail
+   1045 mm
+   1409 fb
+   1872 nowplaying
+   3781 ff
+
+real    0m0.663s
+user    0m0.672s
+sys     0m0.156s
+
+$time cat tweets.txt | grep -i -E -o '@(\S+)' | cut -c 2- | sort | uniq -c | sort -n | tail -n10
+
+    291 mtgcolorpie
+    303 karlievoice
+    347 MAV25
+    354 justinbieber
+    411 breatheitin
+    429 addthis
+    441 OGmuscles
+    525 DonnieWahlberg
+    939 listensto
+   1234 RevRunWisdom:
+
+real    0m3.696s
+user    0m3.813s
+sys     0m0.266s
+
+$time cat tweets.txt | grep -i -E '#[^#]*#' | wc -l
+
+16290
+
+real    0m0.096s
+user    0m0.047s
+sys     0m0.094s
+
+$time head -500000 edges.csv | awk -F, '{if(($2-$1)<0) {printf "%s",substr($2,1,length($2)-1); printf ",%s\n",$1} if(($2-$1)>0) {printf "%s",$1; print
+f ",%s\n", substr($2,1,length($2)-1)}}' | sort -k1 -k2 -g -t, | uniq -d > recip_follower_unix.csv
+
+##this is not an output but rather what the output fill holds##
+3682,5276
+13232,18205
+13232,63255
+15574,15926
+19628,19821
+19628,20033
+22196,76473
+23503,41422
+31866,32002
+32173,32452
+33099,62167
+33884,34046
+33884,34101
+40704,40997
+40704,41039
+40997,41039
+40997,62623
+40997,201063
+58783,58875
+60887,70696
+63255,65435
+65411,65435
+65435,93260
+70696,70772
+78182,78464
+80092,80096
+89222,89350
+93260,93427
+100591,100721
+102898,122546
+134409,134410
+135546,135684
+192865,192899
+201078,201607
+
+real    0m1.887s
+user    0m1.766s
+sys     0m0.203s
